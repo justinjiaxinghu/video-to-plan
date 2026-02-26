@@ -1,0 +1,7 @@
+.env
+.cache/
+__pycache__/
+*.pyc
+*.mp4
+*.srt
+engineering_plan.md
