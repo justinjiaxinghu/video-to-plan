@@ -1,0 +1,10 @@
+{
+  "name": "rodolfo-pedro",
+  "promoted_at": "2026-02-27T07:43:10.981707",
+  "source_plan": "/Users/justinjhu/Documents/video-to-plan/engineering_plan.md",
+  "source_cache": "/Users/justinjhu/Documents/video-to-plan/.cache",
+  "artifacts": [
+    "visual_analysis.json",
+    "synthesis.json"
+  ]
+}

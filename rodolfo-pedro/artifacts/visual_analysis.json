@@ -1,0 +1,158 @@
+{
+  "observations": [
+    {
+      "timestamp": "00:00",
+      "end_timestamp": "00:38",
+      "type": "app_ui",
+      "description": "The video starts with a Microsoft Teams call waiting screen. The call is titled 'Call Henrique Guerra, Rodolfo Guerra, Pedro Judice' and is scheduled for 2026-02-19 15:00 UTC. The text 'Recorded automatically' is visible. The screen then transitions to show the initials of the participants in circles: 'RG' for Rodolfo Guerra, then 'PJ' for Pedro Judice is added, and finally 'HG' for Henrique Cordeiro Guerra.",
+      "data_fields": [
+        "Call Henrique Guerra, Rodolfo Guerra, Pedro Judice",
+        "2026-02-19 15:00 UTC",
+        "Recorded automatically"
+      ],
+      "ui_elements": [],
+      "workflow_action": "Waiting for the call to start.",
+      "spoken_context": ""
+    },
+    {
+      "timestamp": "00:38",
+      "end_timestamp": "09:37",
+      "type": "app_ui",
+      "description": "The Microsoft Teams video call interface is shown with three participants. On the left, Pedro Judice is visible against a virtual background of a modern, minimalist interior. In the top right, Henrique Cordeiro Guerra is shown in a room with prominent wooden structures. In the bottom right, Rodolfo Guerra is in an office setting. The layout changes multiple times, sometimes showing two participants side-by-side and the third as an icon.",
+      "data_fields": [
+        "Pedro Judice",
+        "Rodolfo Guerra",
+        "Henrique Cordeiro Guerra"
+      ],
+      "ui_elements": [],
+      "workflow_action": "Participants are engaged in a conversation.",
+      "spoken_context": "The participants are discussing technology in the real estate sector. Henrique introduces Pedro, who lives in San Francisco and is well-connected in the tech ecosystem. They discuss Pedro's experience with data evaluation for autonomous vehicles and how it could be applied to real estate."
+    },
+    {
+      "timestamp": "09:37",
+      "end_timestamp": "14:02",
+      "type": "spreadsheet",
+      "description": "Rodolfo Guerra shares his screen, displaying a complex financial model in Microsoft Excel. The spreadsheet is titled 'INVESTMENT SUMMARY' and is for a property named '222 S RIO BRONSON MEMORIAL' in 'KISSIMMEE, FL'. The sheet is divided into multiple sections detailing the financial aspects of a real estate development project. The user scrolls through the 'SUMMARY' and 'INPUTS' tabs.",
+      "data_fields": [
+        "INVESTMENT SUMMARY",
+        "PROPERTY NAME: 222 S RIO BRONSON MEMORIAL",
+        "CITY, STATE: KISSIMMEE, FL",
+        "INVESTMENT DESCRIPTION",
+        "SOURCES AND USES",
+        "PROFORMA KEY ASSUMPTIONS",
+        "STABILIZED PROFORMA SUMMARY",
+        "PROPERTY LEVEL RETURNS (UNLEVERED, LEVERED)",
+        "DEVELOPMENT RETURNS (YIELD ON COST)",
+        "EXIT SUMMARY",
+        "FINANCING SUMMARY",
+        "EQUITY RETURN (ASSUMES HOLD)",
+        "TOTAL PROJECT SOURCES",
+        "LAND COST",
+        "HARD COST",
+        "SOFT COST - CONSTRUCTION",
+        "TOTAL PROJECT USES"
+      ],
+      "ui_elements": [
+        "Tabs: SUMMARY, INPUTS, RENT ANALYSIS, BUDGET, MONTHLY SCHEDULE, ANNUAL PROFORMA, MONTHLY PROFORMA, HINDSIGHT PROFORMA"
+      ],
+      "workflow_action": "Scrolling through the 'SUMMARY' and 'INPUTS' tabs of the Excel spreadsheet to explain the financial model.",
+      "spoken_context": "Rodolfo explains that this is a 'back of the envelope' analysis he does for projects. He mentions the various components of the model, such as sources and uses, costs, and returns."
+    },
+    {
+      "timestamp": "14:02",
+      "end_timestamp": "16:27",
+      "type": "document",
+      "description": "Rodolfo Guerra switches his screen share to a PDF document titled 'Cushman Wakefield - 390 Bird OM.pdf', which is an Offering Memorandum. He scrolls through the document, which contains market analysis for a property. A section titled 'Land Sale Comparables' is shown, with a table of similar property sales. Another section shows 'Coral Gables Office Submarket Breakdown' with a table and a bar chart for 'Coral Gables Rent & Occupancy'.",
+      "data_fields": [
+        "Land Sale Comparables",
+        "DATE",
+        "PROPERTY",
+        "PROPERTY TYPE",
+        "ACRES",
+        "LAND SF",
+        "UNITS",
+        "PURCHASE PRICE",
+        "PRICE/UNIT",
+        "PRICE/SF",
+        "PRICE/ACRE",
+        "Coral Gables Office Submarket Breakdown",
+        "CLASS",
+        "AREA (MILLION SF)",
+        "AVERAGE RENT",
+        "OCCUPANCY"
+      ],
+      "ui_elements": [
+        "PDF viewer controls (Zoom, Page navigation)"
+      ],
+      "workflow_action": "Scrolling through a PDF document to show market data and comparable property sales.",
+      "spoken_context": "Rodolfo explains that this is the type of document he receives from brokers, which contains market data from sources like CoStar. He points out that two of the properties listed as comparables are his own projects, highlighting that the data is public."
+    },
+    {
+      "timestamp": "19:21",
+      "end_timestamp": "21:33",
+      "type": "app_ui",
+      "description": "Rodolfo shares his screen showing a conversation with 'ChatGPT 5.2'. He shows a detailed prompt where he asks for help underwriting an office building in Coral Gables, comparing it to his knowledge of multifamily properties. ChatGPT provides a structured response with market benchmarks for Rent, Vacancy Rate, Operating Expense Ratio, and Capitalization (Cap) Rate for the Coral Gables area, and concludes with a simplified underwriting structure.",
+      "data_fields": [
+        "Prompt: 'I know how to do the valuation of a multifamily property... How do you underwrite an office building? What should be the Rent per sq/ft per year? What should be the vacancy? The Opex Ratio? The Cap Rate? The address is 390 Bird Road, Coral Gables, Florida.'",
+        "Response Section 1: Rent (Rent/SF/Year)",
+        "Response Section 2: Vacancy Rate",
+        "Response Section 3: Operating Expense Ratio",
+        "Response Section 4: Capitalization (Cap) Rate",
+        "Putting It Together - Office Underwriting Structure"
+      ],
+      "ui_elements": [
+        "New chat button",
+        "Chat history sidebar (Investing, Sunesen, Gables, Office Building Underwriting)",
+        "Share button",
+        "Ask anything... input field"
+      ],
+      "workflow_action": "Scrolling through a ChatGPT conversation to demonstrate how he uses AI to quickly gather market data for a property type he is less familiar with.",
+      "spoken_context": "Rodolfo explains how he used ChatGPT to get quick benchmark data for an office building, which is different from the multifamily projects he usually works on. He mentions the specific metrics he was looking for, like cap rate and operating expenses."
+    },
+    {
+      "timestamp": "26:16",
+      "end_timestamp": "28:49",
+      "type": "spreadsheet",
+      "description": "Rodolfo shares his screen again, showing a simplified 'Back of the Envelope' analysis in an Excel spreadsheet for the '390 Bird Road - Coral Gables' project. The sheet is split into a data entry section on the left and a graphical 'Executive Summary' on the right. He shows how he inputs data from his research (from the OM and ChatGPT) to calculate valuations for the residential, office, and retail components, and then a total project valuation and profit/loss.",
+      "data_fields": [
+        "Back of the Envelope",
+        "Project Name: 390 Bird Road - Coral Gables",
+        "Operation Analysis",
+        "Unit Mix",
+        "Residential Valuation",
+        "Office Valuation",
+        "Retail Valuation",
+        "Total Valuation",
+        "Development Pro-Forma Stack",
+        "Land Cost",
+        "Hard Cost",
+        "Soft Costs",
+        "Total Costs",
+        "Net Profit",
+        "Executive Summary: Total Development SF, Units, SF Avg Unit Size, Acres, Sellable SF, Stories, Retail SF, Office SF, Parking Spaces"
+      ],
+      "ui_elements": [],
+      "workflow_action": "Showing the completed 'back of the envelope' spreadsheet and explaining the outcome of the quick analysis.",
+      "spoken_context": "Rodolfo explains this is his quick, 3-4 hour process to vet a deal. He shows that based on his initial analysis, the project would result in an $11 million loss, so he decided not to pursue it further. This demonstrates the manual process of consolidating data from various sources into his model."
+    }
+  ],
+  "app_names": [
+    "Microsoft Teams",
+    "Microsoft Excel",
+    "ChatGPT",
+    "Adobe Acrobat"
+  ],
+  "data_sources": [
+    "CoStar",
+    "realtor.com",
+    "Public Records",
+    "Cushman & Wakefield",
+    "ChatGPT"
+  ],
+  "pain_points_visual": [
+    "The workflow involves manually switching between multiple applications (PDF viewer for OM, ChatGPT for market data, Excel for financial modeling) to perform a single task.",
+    "Data from the Offering Memorandum (PDF) and ChatGPT must be manually copied and pasted or re-typed into the Excel spreadsheet.",
+    "The process of creating a preliminary analysis ('back of the envelope') is described as taking 3-4 hours, and a full, detailed analysis takes 1-2 weeks, indicating a highly time-consuming and labor-intensive workflow.",
+    "The user has to manually find and analyze multiple comparable properties ('comps') from different sources to validate the assumptions in their financial model, a process that could be automated."
+  ]
+}
