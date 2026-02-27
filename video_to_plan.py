@@ -6,8 +6,8 @@ Multi-phase pipeline that uses AI video understanding + subtitles to generate
 a full PRD-level engineering plan for a product that solves the problems discussed.
 
 Pipeline:
-  Video + SRT → Phase 1 (Gemini: Visual Extraction)
-              → Phase 2 (Gemini: Synthesis)
+  Video + SRT → Phase 1 (Gemini 2.5 Pro: Visual Extraction)
+              → Phase 2 (Gemini 2.5 Flash: Synthesis)
               → Phase 3 (OpenAI: PRD Generation)
               → engineering_plan.md
 """
@@ -25,7 +25,7 @@ import openai
 
 
 # ---------------------------------------------------------------------------
-# Phase 1 — Visual Extraction (Gemini 2.5 Flash)
+# Phase 1 — Visual Extraction (Gemini 2.5 Pro)
 # ---------------------------------------------------------------------------
 
 PHASE1_PROMPT = """\
@@ -84,79 +84,125 @@ Return ONLY valid JSON, no markdown fences.
 """
 
 
-def run_phase1(video_path: str, srt_content: str, gemini_key: str, cache_dir: Path) -> dict:
-    """Upload video to Gemini and extract visual observations."""
-    print("=" * 60)
-    print("PHASE 1: Visual Extraction (Gemini 2.5 Flash)")
-    print("=" * 60)
+def _elapsed(start: float) -> str:
+    """Format elapsed time since start."""
+    secs = int(time.time() - start)
+    if secs < 60:
+        return f"{secs}s"
+    return f"{secs // 60}m {secs % 60}s"
 
-    client = genai.Client(api_key=gemini_key)
 
-    # Upload video file
-    print(f"Uploading video: {video_path}")
-    video_file = client.files.upload(file=video_path)
-    print(f"Upload complete. File name: {video_file.name}")
+def _strip_fences(text: str) -> str:
+    """Strip markdown code fences from text."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1]
+        if text.endswith("```"):
+            text = text.rsplit("```", 1)[0]
+        text = text.strip()
+    return text
 
-    # Poll until file is ACTIVE
-    print("Waiting for file processing...")
-    while video_file.state.name == "PROCESSING":
-        time.sleep(5)
-        video_file = client.files.get(name=video_file.name)
-        print(f"  State: {video_file.state.name}")
 
-    if video_file.state.name == "FAILED":
-        raise RuntimeError(f"Video processing failed: {video_file.state.name}")
+def _progress(msg: str) -> None:
+    """Print a progress line, flushing immediately."""
+    print(msg, flush=True)
 
-    print(f"File ready: {video_file.state.name}")
 
-    # Build prompt
-    prompt = PHASE1_PROMPT.format(srt_content=srt_content)
+def _stream_gemini(client, model: str, contents, label: str) -> str:
+    """Stream a Gemini response, printing periodic progress. Returns full text."""
+    _progress(f"  Streaming from {model}...")
+    start = time.time()
+    chunks = []
+    char_count = 0
+    last_report = 0
 
-    # Call Gemini with video + prompt
-    print("Sending to Gemini 2.5 Flash for visual analysis...")
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[
-            genai_types.Content(
-                parts=[
-                    genai_types.Part.from_uri(
-                        file_uri=video_file.uri,
-                        mime_type=video_file.mime_type,
-                    ),
-                    genai_types.Part.from_text(text=prompt),
-                ]
-            )
-        ],
+    response = client.models.generate_content_stream(
+        model=model,
+        contents=contents,
         config=genai_types.GenerateContentConfig(
             temperature=0.2,
             max_output_tokens=65536,
         ),
     )
 
-    # Parse response
-    raw_text = response.text.strip()
-    # Strip markdown fences if present
-    if raw_text.startswith("```"):
-        raw_text = raw_text.split("\n", 1)[1]
-        if raw_text.endswith("```"):
-            raw_text = raw_text.rsplit("```", 1)[0]
-        raw_text = raw_text.strip()
+    for chunk in response:
+        if chunk.text:
+            chunks.append(chunk.text)
+            char_count += len(chunk.text)
+            # Print progress every 2000 chars to avoid spam
+            if char_count - last_report >= 2000:
+                _progress(f"  ... {label}: {char_count:,} chars ({_elapsed(start)})")
+                last_report = char_count
+
+    _progress(f"  ✓ {label}: {char_count:,} chars total ({_elapsed(start)})")
+    return "".join(chunks)
+
+
+def run_phase1(video_path: str, srt_content: str, gemini_key: str, cache_dir: Path) -> dict:
+    """Upload video to Gemini and extract visual observations."""
+    phase_start = time.time()
+    print("=" * 60)
+    print("PHASE 1: Visual Extraction (Gemini 2.5 Pro)")
+    print("=" * 60)
+
+    client = genai.Client(api_key=gemini_key)
+
+    # Upload video file
+    file_size_mb = Path(video_path).stat().st_size / (1024 * 1024)
+    _progress(f"  Uploading video: {video_path} ({file_size_mb:.1f} MB)")
+    upload_start = time.time()
+    video_file = client.files.upload(file=video_path)
+    _progress(f"  ✓ Upload complete in {_elapsed(upload_start)}. File: {video_file.name}")
+
+    # Poll until file is ACTIVE
+    _progress("  Waiting for file processing...")
+    poll_start = time.time()
+    while video_file.state.name == "PROCESSING":
+        time.sleep(5)
+        video_file = client.files.get(name=video_file.name)
+        _progress(f"  ... still processing ({_elapsed(poll_start)})")
+
+    if video_file.state.name == "FAILED":
+        raise RuntimeError(f"Video processing failed: {video_file.state.name}")
+
+    _progress(f"  ✓ File ready ({_elapsed(poll_start)})")
+
+    # Build prompt
+    prompt = PHASE1_PROMPT.format(srt_content=srt_content)
+
+    # Call Gemini with video + prompt (streaming)
+    contents = [
+        genai_types.Content(
+            parts=[
+                genai_types.Part.from_uri(
+                    file_uri=video_file.uri,
+                    mime_type=video_file.mime_type,
+                ),
+                genai_types.Part.from_text(text=prompt),
+            ]
+        )
+    ]
+
+    raw_text = _stream_gemini(client, "gemini-2.5-pro", contents, "Visual analysis")
+    raw_text = _strip_fences(raw_text)
 
     result = json.loads(raw_text)
 
     # Save to cache
     out_path = cache_dir / "visual_analysis.json"
     out_path.write_text(json.dumps(result, indent=2, ensure_ascii=False))
-    print(f"Saved: {out_path}")
-    print(f"  {len(result.get('observations', []))} visual observations extracted")
+    obs_count = len(result.get('observations', []))
+    print(f"  Saved: {out_path}")
+    print(f"  {obs_count} visual observations extracted")
 
     # Clean up uploaded file
     try:
         client.files.delete(name=video_file.name)
-        print("Cleaned up uploaded video file.")
+        print("  Cleaned up uploaded video file.")
     except Exception:
         pass
 
+    print(f"  Phase 1 total: {_elapsed(phase_start)}")
     return result
 
 
@@ -234,6 +280,7 @@ Return ONLY valid JSON, no markdown fences.
 
 def run_phase2(visual_analysis: dict, srt_content: str, gemini_key: str, cache_dir: Path) -> dict:
     """Synthesize visual analysis + transcript into structured findings."""
+    phase_start = time.time()
     print("\n" + "=" * 60)
     print("PHASE 2: Synthesis (Gemini 2.5 Flash)")
     print("=" * 60)
@@ -245,31 +292,18 @@ def run_phase2(visual_analysis: dict, srt_content: str, gemini_key: str, cache_d
         srt_content=srt_content,
     )
 
-    print("Sending to Gemini 2.5 Flash for synthesis...")
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config=genai_types.GenerateContentConfig(
-            temperature=0.2,
-            max_output_tokens=65536,
-        ),
-    )
-
-    raw_text = response.text.strip()
-    if raw_text.startswith("```"):
-        raw_text = raw_text.split("\n", 1)[1]
-        if raw_text.endswith("```"):
-            raw_text = raw_text.rsplit("```", 1)[0]
-        raw_text = raw_text.strip()
+    raw_text = _stream_gemini(client, "gemini-2.5-flash", prompt, "Synthesis")
+    raw_text = _strip_fences(raw_text)
 
     result = json.loads(raw_text)
 
     out_path = cache_dir / "synthesis.json"
     out_path.write_text(json.dumps(result, indent=2, ensure_ascii=False))
-    print(f"Saved: {out_path}")
+    print(f"  Saved: {out_path}")
     print(f"  {len(result.get('pain_points', []))} pain points identified")
     print(f"  {len(result.get('current_workflows', []))} workflows documented")
     print(f"  {len(result.get('user_personas', []))} user personas identified")
+    print(f"  Phase 2 total: {_elapsed(phase_start)}")
 
     return result
 
@@ -357,6 +391,7 @@ Output the complete PRD in Markdown format.
 
 def run_phase3(synthesis: dict, openai_key: str, output_path: Path) -> str:
     """Generate the full PRD from synthesis using OpenAI."""
+    phase_start = time.time()
     print("\n" + "=" * 60)
     print("PHASE 3: PRD Generation (OpenAI gpt-5.2)")
     print("=" * 60)
@@ -367,27 +402,44 @@ def run_phase3(synthesis: dict, openai_key: str, output_path: Path) -> str:
         synthesis=json.dumps(synthesis, indent=2, ensure_ascii=False),
     )
 
-    print("Sending to OpenAI gpt-5.2 for PRD generation...")
-    response = client.chat.completions.create(
+    _progress("  Streaming from gpt-5.2...")
+    start = time.time()
+    chunks = []
+    char_count = 0
+    last_report = 0
+
+    stream = client.chat.completions.create(
         model="gpt-5.2",
         messages=[
             {"role": "system", "content": "You are a senior product manager and technical architect producing a detailed PRD."},
             {"role": "user", "content": prompt},
         ],
         temperature=0.3,
-        max_tokens=16384,
+        max_completion_tokens=16384,
+        stream=True,
     )
 
-    prd_content = response.choices[0].message.content
+    for event in stream:
+        delta = event.choices[0].delta.content if event.choices[0].delta else None
+        if delta:
+            chunks.append(delta)
+            char_count += len(delta)
+            if char_count - last_report >= 2000:
+                _progress(f"  ... PRD generation: {char_count:,} chars ({_elapsed(start)})")
+                last_report = char_count
+
+    _progress(f"  ✓ PRD generation: {char_count:,} chars total ({_elapsed(start)})")
+
+    prd_content = "".join(chunks)
 
     output_path.write_text(prd_content, encoding="utf-8")
-    print(f"Saved: {output_path}")
+    print(f"  Saved: {output_path}")
 
     # Count sections
     section_count = sum(1 for line in prd_content.split("\n") if line.startswith("## "))
     word_count = len(prd_content.split())
-    print(f"  {section_count} top-level sections")
-    print(f"  {word_count} words")
+    print(f"  {section_count} top-level sections, {word_count:,} words")
+    print(f"  Phase 3 total: {_elapsed(phase_start)}")
 
     return prd_content
 
@@ -448,6 +500,7 @@ Examples:
     # Read SRT content
     srt_content = srt_path.read_text(encoding="utf-8")
 
+    total_start = time.time()
     print(f"Video:     {video_path}")
     print(f"Subtitles: {srt_path}")
     print(f"Output:    {output_path}")
@@ -486,7 +539,7 @@ Examples:
         prd = run_phase3(synthesis, openai_key, output_path)
 
     print("\n" + "=" * 60)
-    print("DONE")
+    print(f"DONE — total time: {_elapsed(total_start)}")
     print("=" * 60)
     if 3 in phases_to_run:
         print(f"PRD written to: {output_path}")
